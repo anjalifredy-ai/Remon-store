@@ -1,18 +1,19 @@
 package com.rikky.store
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
 
-    // JS that runs after every page load - replaces Play Store text/branding
     private val brandingInjectionJS = """
         (function() {
             function replaceText(node) {
@@ -32,8 +33,6 @@ class MainActivity : AppCompatActivity() {
             }
             try {
                 replaceText(document.body);
-
-                // watch for dynamically loaded content (Play Store is JS-heavy)
                 var observer = new MutationObserver(function(mutations) {
                     mutations.forEach(function(m) {
                         m.addedNodes.forEach(function(n) {
@@ -42,8 +41,6 @@ class MainActivity : AppCompatActivity() {
                     });
                 });
                 observer.observe(document.body, { childList: true, subtree: true });
-
-                // try replacing document title too
                 if (document.title) {
                     document.title = document.title
                         .replace(/Google Play Store/gi, 'RikkY Store')
@@ -65,9 +62,29 @@ class MainActivity : AppCompatActivity() {
         webView.settings.domStorageEnabled = true
         webView.settings.databaseEnabled = true
         webView.settings.setSupportZoom(false)
-        webView.settings.userAgentString = webView.settings.userAgentString + " RikkYStore/1.0"
+        webView.settings.userAgentString =
+            "Mozilla/5.0 (Linux; Android 13; Pixel) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
 
         webView.webViewClient = object : WebViewClient() {
+
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
+                val url = request?.url.toString()
+                return if (url.startsWith("http://") || url.startsWith("https://")) {
+                    false // let WebView load it normally
+                } else {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        // no app to handle it, ignore
+                    }
+                    true
+                }
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 webView.evaluateJavascript(brandingInjectionJS, null)
