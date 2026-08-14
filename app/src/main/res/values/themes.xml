@@ -9,8 +9,4 @@
         <item name="android:statusBarColor">@color/bg_dark</item>
     </style>
 
-    <style name="Theme.RikkyStore.Splash" parent="Theme.RikkyStore">
-        <item name="android:windowBackground">@drawable/splash_background</item>
-    </style>
-
 </resources>
