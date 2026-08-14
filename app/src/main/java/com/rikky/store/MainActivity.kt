@@ -123,8 +123,7 @@ class MainActivity : AppCompatActivity() {
                 webView.evaluateJavascript(brandingInjectionJS, null)
             }
         }
-
-        webView.loadUrl("https://play.google.com/store/apps")
+          webView.loadUrl("https://apkpure.com")
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
